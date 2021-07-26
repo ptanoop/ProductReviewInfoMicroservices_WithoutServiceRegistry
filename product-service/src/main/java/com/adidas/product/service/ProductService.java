@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
@@ -32,17 +33,16 @@ public class ProductService {
     @Value("${review.service.url}")
     private String REVIEW_SERVICE_URL;
 
-
     @Value("${adidas.rest.link}")
     private String ADIDAS_REST_URL;
 
     @Value("${adidas.rest.call.user.agent}")
     private String ADIDAS_REST_CALL_USER_AGENT;
 
-    private Product getProductFromAdidasById(String productId){
+    private Product getProductFromAdidasById(String productId) {
         Product adidasProduct = null;
         try {
-            URL url = new URL(ADIDAS_REST_URL+"/"+productId);
+            URL url = new URL(ADIDAS_REST_URL + "/" + productId);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("GET");
@@ -61,44 +61,47 @@ public class ProductService {
                 throw new RuntimeException("Failed : HTTP error code : "
                         + urlConnection.getResponseCode());
 
-            }
-            else{
-                log.info("Product JSON String = "+sb);
+            } else {
+                log.info("Product JSON String = " + sb);
                 System.out.println(sb);
                 ObjectMapper objectMapper = new ObjectMapper();
                 adidasProduct = objectMapper.readValue(sb.toString(), Product.class);
             }
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             log.info("Product not found for productId : " + productId);
+            e.printStackTrace();
         }
         return adidasProduct;
     }
 
-    private Review getProductReview(String productId){
+    private Review getProductReview(String productId) {
         RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
         RestTemplate restTemplate = restTemplateBuilder.basicAuthentication(REVIEW_SERVICE_USERNAME, REVIEW_SERVICE_PASSWORD).build();
         Review review = null;
         try {
             review = restTemplate.getForObject(REVIEW_SERVICE_URL + productId, Review.class);
-        }
-        catch(HttpClientErrorException ex){
+        } catch (HttpClientErrorException ex) {
             log.info("Review not found for productId : " + productId);
+        } catch (ResourceAccessException rs) {
+            log.info("Not able to connect to review service");
+        } catch (Exception anyOtherEx) {
+            log.info("Unexpected exception from review service");
+            anyOtherEx.printStackTrace();
         }
         return review;
     }
 
     public ProductReviewResponse getProductById(String productId) {
-        log.info("Get Product By Id From Service");
+        log.info("Get Product By productId From Adidas Service");
         Product product = getProductFromAdidasById(productId);
         log.info(product != null ? product.toString() : "Product Info Null");
-        Review review = getProductReview(productId);
-        log.info(review != null ? review.toString() : "Review Info Null");
-        if(product != null && product.getId()!=null){
-            ProductReviewResponse productReviewResponse = new ProductReviewResponse(product,review);
+        if (product != null && product.getId() != null) {
+            log.info("Get Review By productId From Review Service");
+            Review review = getProductReview(productId);
+            log.info(review != null ? review.toString() : "Review Info Null");
+            ProductReviewResponse productReviewResponse = new ProductReviewResponse(product, review);
             return productReviewResponse;
         }
-        log.info("Got Response from the public service");
         return null;
     }
 }

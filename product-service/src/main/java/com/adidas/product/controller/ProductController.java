@@ -22,7 +22,7 @@ import java.util.Arrays;
 
 @RestController
 @RequestMapping("/products")
-@CrossOrigin(origins="*", maxAge=3600)
+@CrossOrigin(origins = "*", maxAge = 3600)
 @Slf4j
 public class ProductController {
 
@@ -32,10 +32,10 @@ public class ProductController {
 
     @GetMapping("/{productId}")
     public ResponseEntity<ProductReviewResponse> getProductById(@PathVariable String productId) {
-        log.info("Get the product Id : "+productId);
+        log.info("Get the product Id : " + productId);
         ProductReviewResponse productResp = productService.getProductById(productId);
-        log.info(productResp!=null?productResp.toString():"ProductResp is null");
-        if(productResp!=null){
+        log.info(productResp != null ? productResp.toString() : "Product Response is null");
+        if (productResp != null) {
             return new ResponseEntity<>(productResp, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
