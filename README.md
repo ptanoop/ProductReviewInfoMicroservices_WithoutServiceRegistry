@@ -21,4 +21,4 @@ Microservice for Product Info with Review
 * build docker image for review service : _**docker build -t microservicetest/review-service .**_
 * build docker image for product service : _**docker build -t microservicetest/product-service .**_
 * **docker run -p 8081:8081 --name REVIEW_SERVICE microservicetest/review-service**
-* **docker run -p 8080:8080 --name PRODUCT_SERVICE microservicetest/product-service**
+* **docker run -p 8080:8080 --add-host host.docker.internal:host-gateway --name PRODUCT_SERVICE microservicetest/product-service**
