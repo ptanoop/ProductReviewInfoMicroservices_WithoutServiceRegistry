@@ -63,7 +63,6 @@ public class ProductService {
 
             } else {
                 log.info("Product JSON String = " + sb);
-                System.out.println(sb);
                 ObjectMapper objectMapper = new ObjectMapper();
                 adidasProduct = objectMapper.readValue(sb.toString(), Product.class);
             }
@@ -75,10 +74,14 @@ public class ProductService {
     }
 
     private Review getProductReview(String productId) {
+        log.info("Get Product Review of product id = "+productId);
         RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
         RestTemplate restTemplate = restTemplateBuilder.basicAuthentication(REVIEW_SERVICE_USERNAME, REVIEW_SERVICE_PASSWORD).build();
+        log.info("Rest Template Created");
         Review review = null;
+        log.info("Review Object Initialized to null");
         try {
+            log.info("REVIEW_SERVICE_URL = "+REVIEW_SERVICE_URL);
             review = restTemplate.getForObject(REVIEW_SERVICE_URL + productId, Review.class);
         } catch (HttpClientErrorException ex) {
             log.info("Review not found for productId : " + productId);
